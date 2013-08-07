@@ -1,0 +1,10 @@
+name = Context Actions and Tasks (CAT) Menu Example
+description = CAT menu example
+core = 7.x
+package = Administration
+php = 5.2.4
+version = 7.x-1.0
+project = cat_menu_example
+dependencies[] = cat
+dependencies[] = devel
+dependencies[] = menu

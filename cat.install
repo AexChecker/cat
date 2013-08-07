@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the CAT module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function cat_schema() {
+  $schema['menu_router_cat'] = array(
+    'description' => 'Maps paths to various callbacks (access,page and title)',
+    'fields' => array(
+      'pid' => array(
+        'description' => 'Primary Key: Unique path ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'path' => array(
+        'description' => 'Primary Key: the Drupal path this entry describes',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'hidden' => array(
+        'description' => 'A flag for whether the that path is hidden or visible. (1 = a hidden menu item, 2 = a disabled callback, 3 = a deleted menu item, 0 = a normal, visible link)',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'small',
+      )
+    ),
+    'indexes' => array(
+      'path' => array(
+        'path',
+      )
+    ),
+    'primary key' => array(
+      'pid',
+    )
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function cat_requirements($phase) {
+  $requirements = array();
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ */
+function cat_install() {
+  db_update('system')
+    ->fields(array('weight' => 1000))
+    ->condition('name', 'cat')
+    ->condition('type', 'module')
+    ->execute();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function cat_uninstall() {
+  // variable_del('...');
+  menu_rebuild();
+}

@@ -1,0 +1,15 @@
+name = Context Actions and Tasks (CAT) Features Example
+description = CAT import/export features example
+core = 7.x
+package = Administration
+php = 5.2.4
+version = 7.x-1.0
+project = cat_features_example
+dependencies[] = cat
+dependencies[] = devel
+dependencies[] = features
+dependencies[] = menu
+features[features_api][] = api:1
+features[menu_links][] = navigation:cat-menu
+features[menu_links][] = navigation:cat-menu/example-02
+features[menu_links][] = navigation:cat-menu/example-03

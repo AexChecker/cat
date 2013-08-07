@@ -1,0 +1,172 @@
+<?php
+/**
+ * @file
+ * The Context Actions and Tasks (CAT) module provide creation or hide local
+ * actions and local tasks for existing menu path.
+ */
+
+define('MENU_IS_LOCAL_CAT', MENU_IS_LOCAL_ACTION & MENU_IS_LOCAL_TASK);
+define('MENU_LOCAL_CAT_VISIBLE', 0);
+define('MENU_LOCAL_CAT_HIDDEN', 1);
+define('MENU_LOCAL_CAT_DISABLED', 2);
+define('MENU_LOCAL_CAT_DELATED', 3);
+
+/**
+ * Implements hook_menu().
+ */
+function cat_menu() {
+  $items = array();
+
+  $items['admin/structure/menu/cat'] = array(
+    'title' => 'Context Actions and Tasks',
+    'description' => 'Create or hide local actions and tasks for existing menu path.',
+    'page callback' => 'cat_overview_page',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer menu'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'cat.admin.inc',
+    'weight' => 10,
+  );
+
+  $items['admin/structure/menu/cat/hide'] = array(
+    'title' => 'Hide menu',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cat_menu_hide_menu'),
+    'access arguments' => array('administer menu'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'cat.admin.inc',
+  );
+
+  $items['admin/structure/menu/cat/edit/%'] = array(
+    'title' => 'Hide menu',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cat_menu_edit_menu', 5),
+    'access arguments' => array('administer menu'),
+    'type' => MENU_CALLBACK,
+    'file' => 'cat.admin.inc',
+  );
+
+  $items['admin/structure/menu/cat/autocomplete/path'] = array(
+    'title' => 'Autocomplete',
+    'page callback' => 'cat_autocomplete_path',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer menu'),
+    'type' => MENU_CALLBACK,
+    'file' => 'cat.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * hook_menu_alter(&$items)
+ */
+function cat_menu_alter(&$items) {
+  $result = db_query('SELECT mrc.*, mr.* FROM {menu_router_cat} mrc JOIN {menu_router} mr ON mr.path = mrc.path WHERE mrc.hidden != 0');
+
+  foreach ($result as $path) {
+    $path->path_alt = $path->path;
+    $item_path = NULL;
+    if (isset($items[$path->path])) {
+      $item_path = &$items[$path->path];
+    }
+    elseif (!empty($path->load_functions)) {
+      $load_functions = unserialize($path->load_functions);
+      $path_parts = explode('/', $path->path);
+      foreach ($path_parts as $path_arg_index => &$path_arg) {
+        if ($path_arg == '%') {
+          $load_function = '';
+          if (!empty($load_functions[$path_arg_index])) {
+            if (is_string($load_functions[$path_arg_index])) {
+              $load_function = $load_functions[$path_arg_index];
+            }
+            elseif (is_array($load_functions[$path_arg_index])) {
+              $load_function = array_shift(array_keys($load_functions[$path_arg_index]));
+            }
+          }
+          if ($load_function && function_exists($load_function)) {
+            $path_arg .= substr($load_function, 0, -5);
+          }
+        }
+      }
+      $path->path_alt = implode('/', $path_parts);
+      if (isset($items[$path->path_alt])) {
+        $item_path = &$items[$path->path_alt];
+      }
+    }
+
+    if ($item_path) {
+      switch ($path->hidden) {
+        case MENU_LOCAL_CAT_HIDDEN :
+          $item_path['type'] = MENU_CALLBACK;
+          break;
+        case MENU_LOCAL_CAT_DISABLED :
+          $item_path['type'] = MENU_CALLBACK;
+          $item_path['access callback'] = 'user_access';
+          $item_path['access arguments'] = array(
+            'administer menu'
+          );
+          break;
+        case MENU_LOCAL_CAT_DELATED :
+          $item_path['type'] = MENU_CALLBACK;
+          $item_path['access callback'] = '';
+          $item_path['access arguments'] = array();
+          $item_path['page callback'] = 'drupal_not_found';
+          $item_path['page arguments'] = array();
+          break;
+        case MENU_LOCAL_CAT_VISIBLE :
+        default :
+          // it doesn't needs overriding
+          break;
+      }
+    }
+  }
+}
+
+/**
+ * Determine whether the menu item (local task or local action).
+ * This function needs for blocking access to menu item.
+ *
+ * @param String $string
+ * @param Object $account
+ *
+ * @return Boolean
+ */
+function cat_access_callback($string, $account = NULL) {
+  global $user;
+  if (!isset($account)) {
+    $account = $user;
+  }
+  // User #1 has all privileges:
+  if ($account->uid == 1) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_entity_info().
+ */
+function cat_entity_info() {
+  $entity = array(
+    'cat_item' => array(
+      'label' => t('Cat item'),
+      'controller class' => 'DrupalDefaultEntityController',
+      'base table' => 'menu_router_cat',
+      'revision table' => FALSE,
+      'fieldable' => FALSE,
+      'entity keys' => array(
+        'id' => 'pid'
+      ),
+      'bundles' => array(),
+      'view modes' => array(
+        'cat_item' => array(
+          'label' => t('Cat item'),
+          'custom settings' => FALSE
+        )
+      )
+    )
+  );
+
+  return array();
+}

@@ -1,0 +1,71 @@
+<?php
+/**
+ * @file
+ * CAT menu example module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function cat_menu_example_menu() {
+  $items = array();
+
+  $items['cat-menu'] = array(
+    'title' => 'CAT menu example',
+    'description' => 'CAT menu example.',
+    'page callback' => 'cat_menu_example_page_01',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 10,
+    'menu_name' => 'navigation',
+  );
+
+  $items['cat-menu/example-01'] = array(
+    'title' => 'Example #1',
+    'description' => 'CAT menu example #01.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'menu_name' => 'navigation',
+  );
+
+  $items['cat-menu/example-02'] = array(
+    'title' => 'Example #2',
+    'description' => 'CAT menu example #02.',
+    'page callback' => 'cat_menu_example_page_02',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM | MENU_LOCAL_TASK,
+    'menu_name' => 'navigation',
+  );
+
+  $items['cat-menu/example-03'] = array(
+    'title' => 'Example #3',
+    'description' => 'CAT menu example #03.',
+    'page callback' => 'cat_menu_example_page_03',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM | MENU_LOCAL_TASK,
+    'menu_name' => 'navigation',
+  );
+
+  return $items;
+}
+
+/**
+ * Menu callback.
+ */
+function cat_menu_example_page_01() {
+  return t('Example #1');
+}
+
+/**
+ * Menu callback.
+ */
+function cat_menu_example_page_02() {
+  return t('Example #2');
+}
+
+/**
+ * Menu callback.
+ */
+function cat_menu_example_page_03() {
+  return t('Example #3');
+}

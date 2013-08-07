@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the CAT import/export features
+ * example module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function cat_features_example_uninstall() {
+  //menu_rebuild();
+}
