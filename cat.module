@@ -103,9 +103,7 @@ function cat_menu_alter(&$items) {
         case MENU_LOCAL_CAT_DISABLED :
           $item_path['type'] = MENU_CALLBACK;
           $item_path['access callback'] = 'user_access';
-          $item_path['access arguments'] = array(
-            'administer menu'
-          );
+          $item_path['access arguments'] = array('administer menu');
           break;
         case MENU_LOCAL_CAT_DELATED :
           $item_path['type'] = MENU_CALLBACK;
